@@ -81,9 +81,6 @@ export default {
 
       // 礼物
       const giftList = props.giftPin ? giftPinList : danmakuList;
-      live.on('SEND_GIFT', ({ data }) => {
-        handleSendGift(data);
-      });
       live.on('LIVE_OPEN_PLATFORM_SEND_GIFT', ({ data: { uid, uname, gift_name, gift_num, uface } }) => {
         handleSendGift({ uid, uname, giftName: gift_name, num: gift_num, face: uface });
       });
@@ -129,9 +126,6 @@ export default {
       };
 
       // 弹幕
-      live.on('DANMU_MSG', ({ info: [, message, [uid, uname, isOwner]], dm_v2 }) => {
-        handleDanmaku({ uid, uname, message, isOwner, dmV2: dm_v2 });
-      });
       live.on('LIVE_OPEN_PLATFORM_DM', ({ data: { uid, uname, msg, uface } }) => {
         handleDanmaku({ uid, uname, message: msg, face: uface });
       });
@@ -165,18 +159,6 @@ export default {
       };
 
       // SC
-      live.on(
-        'SUPER_CHAT_MESSAGE',
-        ({
-          data: {
-            uid,
-            user_info: { uname, face },
-            message,
-          },
-        }) => {
-          handleSuperChat({ uid, uname, message, face });
-        }
-      );
       live.on('LIVE_OPEN_PLATFORM_SUPER_CHAT', ({ data: { uid, uname, message, uface } }) => {
         handleSuperChat({ uid, uname, message, face: uface });
       });
@@ -191,14 +173,8 @@ export default {
         });
       };
 
-      // 舰长
+      // 上舰
       const guardLevelMap = { 1: '总督', 2: '提督', 3: '舰长' };
-      live.on('GUARD_BUY', ({ data: { uid, username, gift_name, num } }) => {
-        handleGuard({ uid, uname: username, giftName: gift_name, num });
-      });
-      live.on('USER_TOAST_MSG', ({ data: { uid, username, role_name, num, unit } }) => {
-        handleGuard({ uid, uname: username, giftName: role_name, num, unit });
-      });
       live.on(
         'LIVE_OPEN_PLATFORM_GUARD',
         ({
