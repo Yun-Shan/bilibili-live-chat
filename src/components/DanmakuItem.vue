@@ -55,14 +55,29 @@ export default {
   setup(props) {
     const hidden = ref(false);
     const needRemoved = ref(false);
-    if (props.stay) {
-      const stayTimeout = setTimeout(() => {
-        hidden.value = true;
-        if (props.type === 'info') {
-          setTimeout(() => (needRemoved.value = true), 800);
+    switch (props.type) {
+      case 'info': {
+        setTimeout(() => {
+          hidden.value = true;
+          needRemoved.value = true;
+        }, 60_000);
+        break;
+      }
+      case 'enter_room': {
+        setTimeout(() => {
+          hidden.value = true;
+          needRemoved.value = true;
+        }, 30_000);
+        break;
+      }
+      default: {
+        if (props.stay) {
+          const stayTimeout = setTimeout(() => {
+            hidden.value = true;
+          }, props.stay);
+          onBeforeUnmount(() => clearTimeout(stayTimeout));
         }
-      }, props.stay);
-      onBeforeUnmount(() => clearTimeout(stayTimeout));
+      }
     }
     const isHidden = computed(() => props.hidden || hidden.value);
     return { ...toRefs(props), isHidden, needRemoved };

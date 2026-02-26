@@ -198,8 +198,7 @@ export default {
           isAdmin: false,
           face: uface,
         };
-        if (props.delay > 0) setTimeout(() => addDanmaku(danmaku), props.delay * 1000);
-        else addDanmaku(danmaku);
+        addDanmaku(danmaku);
       };
     });
 
