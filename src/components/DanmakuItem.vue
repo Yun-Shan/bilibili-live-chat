@@ -20,6 +20,11 @@
       <span class="danmaku-author-name">{{ uname }}</span>
       <span class="danmaku-message">&nbsp;的SC：{{ message }}</span>
     </div>
+    <div v-else-if="type === 'enter_room'" class="danmaku-content">
+      <span class="danmaku-message">欢迎&nbsp;</span>
+      <span class="danmaku-author-name" :class="{ anchor: isAnchor, admin: isAdmin }">{{ uname }}</span>
+      <span class="danmaku-message">&nbsp;进入直播间</span>
+    </div>
     <div v-else-if="type === 'info'" class="danmaku-content">
       <span class="danmaku-message info">{{ message }}</span>
     </div>

@@ -179,6 +179,28 @@ export default {
           face: uface,
         });
       };
+
+      // 进入房间
+      live.on('LIVE_OPEN_PLATFORM_LIVE_ROOM_ENTER', ({ data }) => {
+        handleEnterRoom(data);
+      });
+      const handleEnterRoom = ({ open_id, uname, uface }) => {
+        if (isBlockedUID(open_id)) {
+          console.log(`屏蔽了来自[${uname}]的进房提示`);
+          return;
+        }
+        const danmaku = {
+          type: 'enter_room',
+          showFace: showFace.value,
+          open_id: open_id,
+          uname,
+          isAnchor: open_id === props.anchor,
+          isAdmin: false,
+          face: uface,
+        };
+        if (props.delay > 0) setTimeout(() => addDanmaku(danmaku), props.delay * 1000);
+        else addDanmaku(danmaku);
+      };
     });
 
     return { props, showFace, giftPinList, danmakuList };
