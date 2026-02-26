@@ -42,7 +42,7 @@ export default defineComponent({
       getOpenData(props.akId, props.akSecret, parseInt(props.appId), props.code)
         .then(data => {
           props.room = data.anchor_info.room_id;
-          props.anchor = data.anchor_info.uid;
+          props.anchor = data.anchor_info.open_id;
           liveWsOptions.value = {
             address: data.websocket_info.wss_link[0],
             authBody: JSON.parse(data.websocket_info.auth_body),

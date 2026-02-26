@@ -15,7 +15,6 @@
 import { onBeforeUnmount, ref, onMounted, computed } from 'vue';
 import { KeepLiveWS } from 'bilibili-live-ws';
 import { propsType } from '@/utils/props';
-import { decodeDmV2 } from '@/utils/protobuf';
 
 import DanmakuList from '@/components/DanmakuList';
 
@@ -23,7 +22,7 @@ export default {
   components: { DanmakuList },
   props: {
     ...propsType,
-    anchor: Number,
+    anchor: String,
     liveWsOptions: Object,
   },
   setup(props) {
@@ -81,79 +80,69 @@ export default {
 
       // 礼物
       const giftList = props.giftPin ? giftPinList : danmakuList;
-      live.on('LIVE_OPEN_PLATFORM_SEND_GIFT', ({ data: { uid, uname, gift_name, gift_num, uface } }) => {
-        handleSendGift({ uid, uname, giftName: gift_name, num: gift_num, face: uface });
+      live.on('LIVE_OPEN_PLATFORM_SEND_GIFT', ({ data }) => {
+        handleSendGift({
+          open_id: data.open_id,
+          uname: data.uname,
+          giftName: data.gift_name,
+          num: data.gift_num,
+          face: data.uface,
+        });
       });
-      const handleSendGift = ({ uid, uname, giftName, num, face }) => {
-        if (isBlockedUID(uid)) {
-          console.log(`屏蔽了来自[${uname}]的礼物：${giftName}*${num}`);
+      const handleSendGift = ({ open_id, uname, gift_name, gift_num, face }) => {
+        if (isBlockedUID(open_id)) {
+          console.log(`屏蔽了来自[${uname}]的礼物：${gift_name}*${gift_num}`);
           return;
         }
+        const giftData = {
+          type: 'gift',
+          showFace: showFace.value,
+          open_id,
+          uname,
+          giftName: gift_name,
+          num: gift_num,
+          face,
+        };
         if (props.giftComb) {
-          const key = `${uid}-${giftName}`;
+          const key = `${open_id}-${gift_name}`;
           const existComb = giftCombMap.get(key);
           if (existComb) {
             giftCombMap.set(key, {
               ...existComb,
-              num: existComb.num + num,
+              num: existComb.num + gift_num,
             });
           } else {
-            giftCombMap.set(key, {
-              type: 'gift',
-              showFace: showFace.value,
-              uid,
-              uname,
-              giftName,
-              num,
-              face,
-            });
+            giftCombMap.set(key, giftData);
             setTimeout(() => {
               giftList.value.addDanmaku(giftCombMap.get(key));
               giftCombMap.delete(key);
             }, props.giftComb);
           }
         } else {
-          giftList.value.addDanmaku({
-            type: 'gift',
-            showFace: showFace.value,
-            uid,
-            uname,
-            giftName,
-            num,
-            face,
-          });
+          giftList.value.addDanmaku(giftData);
         }
       };
 
       // 弹幕
-      live.on('LIVE_OPEN_PLATFORM_DM', ({ data: { uid, uname, msg, uface } }) => {
-        handleDanmaku({ uid, uname, message: msg, face: uface });
+      live.on('LIVE_OPEN_PLATFORM_DM', ({ data }) => {
+        console.log(data);
+        handleDanmaku(data);
       });
-      const handleDanmaku = ({ uid, uname, message, isOwner, dmV2, face }) => {
-        if (isBlockedUID(uid)) {
+      const handleDanmaku = ({ open_id, uname, message, uface, is_admin }) => {
+        if (isBlockedUID(open_id)) {
           console.log(`屏蔽了来自[${uname}]的弹幕：${message}`);
           return;
         }
         const danmaku = {
           type: 'message',
           showFace: showFace.value,
-          uid,
+          open_id: open_id,
           uname,
           message,
-          isAnchor: uid === props.anchor,
-          isOwner: !!isOwner,
-          face,
+          isAnchor: open_id === props.anchor,
+          isAdmin: !!is_admin,
+          face: uface,
         };
-        if (dmV2) {
-          try {
-            const {
-              user: { face },
-            } = decodeDmV2(dmV2);
-            danmaku.face = face;
-          } catch (error) {
-            console.error('[decode dmV2 error]', error);
-          }
-        }
         if (props.delay > 0) setTimeout(() => addDanmaku(danmaku), props.delay * 1000);
         else addDanmaku(danmaku);
       };
@@ -175,35 +164,19 @@ export default {
 
       // 上舰
       const guardLevelMap = { 1: '总督', 2: '提督', 3: '舰长' };
-      live.on(
-        'LIVE_OPEN_PLATFORM_GUARD',
-        ({
-          data: {
-            user_info: { uid, uname, uface },
-            guard_level,
-            guard_num,
-            guard_unit,
-          },
-        }) => {
-          handleGuard({
-            uid,
-            uname,
-            giftName: guardLevelMap[guard_level],
-            num: guard_num,
-            unit: guard_unit,
-            face: uface,
-          });
-        }
-      );
-      const handleGuard = ({ uid, uname, giftName, num, unit, face }) => {
+      live.on('LIVE_OPEN_PLATFORM_GUARD', ({ data }) => {
+        handleGuard(data);
+      });
+      const handleGuard = ({ user_info: { open_id, uname, uface }, guard_level, guard_num, guard_unit }) => {
+        const guardName = guardLevelMap[guard_level];
         giftList.value.addDanmaku({
           type: 'gift',
           showFace: showFace.value,
-          uid,
+          open_id,
           uname,
-          giftName: unit ? `${num}个${unit}${giftName}` : giftName,
-          num: unit ? 0 : num,
-          face,
+          giftName: guard_unit ? `${guardName} * ${guard_num}${guard_unit}` : guardName,
+          num: guard_unit ? 0 : guard_num,
+          face: uface,
         });
       };
     });

@@ -101,7 +101,7 @@ export default {
     // 添加弹幕
     const addDanmaku = async danmaku => {
       if (danmaku.showFace && danmaku.face) {
-        danmaku.face = await loadFace(danmaku.uid, danmaku.face);
+        danmaku.face = await loadFace(danmaku.open_id, danmaku.face);
       }
       danmaku.stay = danmaku.stay || (props.display === 'bottom' ? props.stay : 0);
       danmakuQueue.push({

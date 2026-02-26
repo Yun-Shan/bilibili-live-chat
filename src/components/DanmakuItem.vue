@@ -2,7 +2,7 @@
   <div class="danmaku-item" :class="{ hidden: isHidden }">
     <img v-if="showFace && face" class="danmaku-author-face" :src="face" />
     <div v-if="type === 'message'" class="danmaku-content">
-      <span class="danmaku-author-name with-colon" :class="{ anchor: isAnchor, owner: isOwner }">{{ uname }}</span>
+      <span class="danmaku-author-name with-colon" :class="{ anchor: isAnchor, admin: isAdmin }">{{ uname }}</span>
       <span class="danmaku-message">{{ message }}</span>
     </div>
     <div v-else-if="type === 'gift'" class="danmaku-content">
@@ -37,11 +37,11 @@ export default {
     },
     showFace: Boolean,
     face: String,
-    uid: Number,
+    open_id: String,
     uname: String,
     message: String,
     isAnchor: Boolean,
-    isOwner: Boolean,
+    isAdmin: Boolean,
     giftName: String,
     num: Number,
     stay: Number,
@@ -137,7 +137,7 @@ export default {
       color: #fff248;
     }
     // 房管
-    &.owner {
+    &.admin {
       color: #ff9800;
     }
   }

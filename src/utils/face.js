@@ -26,8 +26,8 @@ const getSmallFace = url => {
   return url.replace(/(\.[^./]+$)/, '$1_48x48$1');
 };
 
-export const loadFace = async (uid, url) => {
-  const key = uid || last(url.split('/'));
+export const loadFace = async (open_id, url) => {
+  const key = open_id || last(url.split('/'));
   if (cache.has(key)) return cache.get(key);
 
   const loads = getFaceLoads(url.replace(/^http:/, 'https:'));
